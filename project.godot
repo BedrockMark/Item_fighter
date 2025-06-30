@@ -14,6 +14,16 @@ config/name="TheCleaner"
 config/features=PackedStringArray("4.4", "GL Compatibility")
 config/icon="res://icon.svg"
 
+[file_customization]
+
+folder_colors={
+"res://UI/": "green",
+"res://assets/": "red",
+"res://class/": "yellow",
+"res://object/": "purple",
+"res://scene/": "blue"
+}
+
 [rendering]
 
 renderer/rendering_method="gl_compatibility"
