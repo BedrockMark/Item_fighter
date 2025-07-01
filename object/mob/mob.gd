@@ -1,6 +1,9 @@
+### Mob template, most files in this folder should extends from this class.
+
 class_name Mob extends CharacterBody2D
 
 @export var mobData: MobData = null # WARNING: if it's null, it's nothing!!!
+@export var defaultMobData: MobData = null # NOTE: it's an optional data, which can be use to determine its origional data.
 @export var inventory: Inventory = null # NOTE: An inventory will be automatically assigned IF there's nothing is manual assigned
 @export var buff: Dictionary[String, Buff]
 
@@ -17,7 +20,7 @@ func _init(data: MobData = null, defaultInventory: Inventory = null) -> void:
 	if(defaultInventory): inventory = defaultInventory
 
 func  _ready() -> void:
-	if(inventory == null): inventory = Inventory.new(mobData,mobData.itemCapability)
+	if(inventory == null): inventory = Inventory.new(self,mobData.itemCapability)
 
 func move_mob(input_vector:Vector2)->void:
 	assert(mobData, "Unable to move mob with null data!")

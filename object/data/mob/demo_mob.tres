@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="MobData" load_steps=2 format=3 uid="uid://bwho6ff5tgkrn"]
+
+[ext_resource type="Script" uid="uid://m2v2ykmukvg7" path="res://class/mob_data.gd" id="1_eru4c"]
+
+[resource]
+script = ExtResource("1_eru4c")
+hp = 100.0
+defend = 0.0
+speed = 150.0
+weaponCapability = 1
+abilityCapability = 0
+itemCapability = 1
+metadata/_custom_type_script = "uid://m2v2ykmukvg7"
