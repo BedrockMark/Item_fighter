@@ -5,15 +5,24 @@
 class_name global extends Node
 
 ### Nodes
-var player:Player = null
+var player:Mob = null
 
 ### Resource dictionary
+var itemData: Dictionary[String, ItemData] = {}
+var mobData: Dictionary[String, MobData] = {}
 var items: Dictionary[String, ItemData] = {}
 var mobs: Dictionary[String, MobData] = {}
 var maps: Dictionary[String, PackedScene] = {}
 
 func _ready() -> void:
-	player = load("res://object/player.tscn").instantiate()
+	player = load("res://object/mob.tscn").instantiate()
+
+func _physics_process(_delta):
+	var input_vector = Vector2(
+		Input.get_action_strength("ui_right") - Input.get_action_strength("ui_left"),
+		Input.get_action_strength("ui_down") - Input.get_action_strength("ui_up")
+	).normalized()
+	if(player): player.move_mob(input_vector)
 
 func load_data() -> bool:
 	# Load ItemData
@@ -22,15 +31,17 @@ func load_data() -> bool:
 		if path.ends_with(".tres"):
 			var item = load("res://data/items/" + path)
 			if item:
-				items[path] = item
-
+				itemData[path] = item
 	# Load MobData
 	var mob_paths = DirAccess.get_files_at("res://object/data/mob/")
 	for path in mob_paths:
 		if path.ends_with(".tres"):
 			var mob = load("res://data/mobs/" + path)
 			if mob:
-				mobs[path] = mob
+				mobData[path] = mob
+	return true
+
+func load_object() -> bool:
 	return true
 
 func load_map(path:String)->PackedScene:
