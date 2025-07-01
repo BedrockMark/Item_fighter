@@ -37,7 +37,7 @@ func move_mob(input_vector:Vector2)->void:
 		
 	if anim_sprite.animation != playerState+"_"+playerDirection:
 		anim_sprite.play(playerState+"_"+playerDirection)
-		print(playerState+"_"+playerDirection)
+		#print(playerState+"_"+playerDirection)
 
 func _update_walk_animation(direction: Vector2):
 	if direction.y < 0:
