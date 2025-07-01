@@ -8,7 +8,7 @@ var currentArena:Node2D = null
 
 func _ready() -> void:
 	currentArena = $Map
-	turn_to_map("res://scene/arena/demo.tscn")
+	#turn_to_map("res://scene/arena/demo.tscn")
 
 func turn_to_map(path:String)->bool:
 	var map := Global.load_map(path)
