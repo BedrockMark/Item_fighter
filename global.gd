@@ -8,12 +8,12 @@ class_name global extends Node
 var player:Mob = null
 
 ### Resource dictionary
-var itemData: Dictionary[String, ItemData] = {}
-var mobData: Dictionary[String, MobData] = {}
+var itemData: Dictionary[StringName, ItemData] = {}
+var mobData: Dictionary[StringName, MobData] = {}
 
-var items: Dictionary[String, PackedScene] = {}
-var mobs: Dictionary[String, PackedScene] = {}
-var maps: Dictionary[String, PackedScene] = {}
+var items: Dictionary[StringName, PackedScene] = {}
+var mobs: Dictionary[StringName, PackedScene] = {}
+var maps: Dictionary[StringName, PackedScene] = {}
 
 func _ready() -> void:
 	player = load("res://object/mob/mob.tscn").instantiate()

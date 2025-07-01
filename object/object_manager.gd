@@ -2,12 +2,12 @@ extends Node
 
 func load_data() -> bool:
 	# Load Global.itemData
-	var itemPaths := DirAccess.get_files_at("res://object/data/item/")
+	var itemPaths := DirAccess.get_files_at("res://data/item/")
 	var fileCount:=itemPaths.size()
 	var importCount :=0
 	for path in itemPaths:
 		if path.ends_with(".tres"):
-			var item = load("res://object/data/item/" + path)
+			var item = load("res://data/item/" + path)
 			if item:
 				Global.itemData[path.get_basename()] = item
 				importCount+=1
@@ -17,11 +17,11 @@ func load_data() -> bool:
 	importCount = 0
 	fileCount = 0
 	# Load Global.mobData
-	var mobPaths := DirAccess.get_files_at("res://object/data/mob/")
+	var mobPaths := DirAccess.get_files_at("res://data/mob/")
 	for path in mobPaths:
 		fileCount+=1
 		if path.ends_with(".tres"):
-			var mob = load("res://object/data/mob/" + path)
+			var mob = load("res://data/mob/" + path)
 			if mob:
 				Global.mobData[path.get_basename()] = mob
 				importCount+=1
