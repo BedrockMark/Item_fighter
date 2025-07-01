@@ -1,3 +1,10 @@
-[gd_scene format=3 uid="uid://c5l8xka5dtwdl"]
+[gd_scene load_steps=2 format=3 uid="uid://c5l8xka5dtwdl"]
+
+[ext_resource type="Script" uid="uid://cf7owh8u8qa68" path="res://scene/scene_manager.gd" id="1_2hjau"]
 
 [node name="SceneManager" type="Node2D"]
+script = ExtResource("1_2hjau")
+
+[node name="Map" type="Node2D" parent="."]
+
+[node name="TileMapLayer" type="TileMapLayer" parent="Map"]

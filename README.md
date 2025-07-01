@@ -6,6 +6,7 @@ Psyclean heartship reborn
 - For files, I tend to use snake_case ---> mob_data_test_demo_refined.gd
 - For class names, Godot use PascalCase ---> class_name MobData extend Resource
 - For functions, Godot use snake_case ---> func attack_with_ability():
+- For nodes, Godot use PascalCase ---> $SceneManager
 - For variables, camelCase can fit because python do it ---> var abilityCoolDownCount: float = 10.0
 - For abilities/buffs, PascalCase, as they represent functions ---> var ability:= {"OneHundredThousandVolt", 1}
 

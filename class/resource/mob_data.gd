@@ -1,7 +1,7 @@
 ### All about mob it self - how many weapon it may hold, backpack slot, hp etc.
 ### NOT about its current state (buffed/upgraded) or its function (move/attack/ability)
 
-class_name MobData extends Resource
+class_name MobData extends ObjectData
 
 @export var hp: float = 100 ## hp < 0 to be infinite
 @export var defend: float = 0 ## negative means extra weak
