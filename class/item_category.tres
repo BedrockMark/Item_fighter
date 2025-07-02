@@ -1,9 +1,0 @@
-[gd_resource type="JSON" format=3 uid="uid://dtwfak3wwa1sc"]
-
-[resource]
-data = {
-"cloth": ["underwear", "coat"],
-"food": ["sushi", "raw"],
-"material": [],
-"weapon": ["melee", "range"]
-}

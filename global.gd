@@ -2,7 +2,7 @@
 ### NOTE: I'm being a bit lazy by doing this, that I don't expect it to expand extra large.
 ### Hopfully, we can navigate through it easily - hopfully
 
-class_name global extends Node
+extends Node
 
 ### Nodes
 var player:Mob = null
@@ -11,12 +11,15 @@ var player:Mob = null
 var itemData: Dictionary[StringName, ItemData] = {}
 var mobData: Dictionary[StringName, MobData] = {}
 
+var itemCategories: Dictionary[StringName, ItemCategory] = {}
+
 var items: Dictionary[StringName, PackedScene] = {}
 var mobs: Dictionary[StringName, PackedScene] = {}
 var maps: Dictionary[StringName, PackedScene] = {}
 
 func _ready() -> void:
 	player = load("res://object/mob/mob.tscn").instantiate()
+	ObjectManager.load_category()
 	ObjectManager.load_data()
 	ObjectManager.load_object()
 

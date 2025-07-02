@@ -1,7 +1,7 @@
 [gd_scene load_steps=8 format=3 uid="uid://dyuy7r7svpv8i"]
 
 [ext_resource type="Script" uid="uid://d50i8rfui640" path="res://object/mob/mob.gd" id="1_b28l3"]
-[ext_resource type="Script" uid="uid://m2v2ykmukvg7" path="res://class/data_structure/mob_data.gd" id="2_1jhuq"]
+[ext_resource type="Script" uid="uid://m2v2ykmukvg7" path="res://class/object_data/mob_data.gd" id="2_1jhuq"]
 [ext_resource type="Script" uid="uid://dcyu6avb6akq8" path="res://class/inventory.gd" id="3_1jhuq"]
 [ext_resource type="SpriteFrames" uid="uid://ds6xn3q3v281l" path="res://asset/character/Premade_Character_32x32_01.tres" id="3_cbpmc"]
 
