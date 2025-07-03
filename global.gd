@@ -8,9 +8,6 @@ extends Node
 var player:Mob = null
 
 ### Resource dictionary
-var itemData: Dictionary[StringName, ItemData] = {}
-var mobData: Dictionary[StringName, MobData] = {}
-
 var itemCategories: Dictionary[StringName, ItemCategory] = {}
 
 var items: Dictionary[StringName, PackedScene] = {}
@@ -18,10 +15,10 @@ var mobs: Dictionary[StringName, PackedScene] = {}
 var maps: Dictionary[StringName, PackedScene] = {}
 
 func _ready() -> void:
-	player = load("res://object/mob/mob.tscn").instantiate()
 	ObjectManager.load_category()
-	ObjectManager.load_data()
-	ObjectManager.load_object()
+	ObjectManager.load_item()
+	ObjectManager.load_mob()
+	player = load("res://object/mob/mob.tscn").instantiate()
 
 func _physics_process(_delta):
 	var input_vector = Vector2(

@@ -1,9 +1,0 @@
-[gd_resource type="Resource" script_class="MapData" load_steps=2 format=3 uid="uid://dscgrdu5pmu20"]
-
-[ext_resource type="Script" uid="uid://bjeulmodksqql" path="res://class/object_data/map_data.gd" id="1_h3nbj"]
-
-[resource]
-script = ExtResource("1_h3nbj")
-enemyFrequent = 100.0
-enemyType = Array[StringName]([])
-metadata/_custom_type_script = "uid://bjeulmodksqql"

@@ -1,76 +1,119 @@
 extends Node
 
-var itemDataPath:StringName = "res://data/item/"
-var mobDataPath:StringName = "res://data/mob/"
 var itemScenePath:StringName = "res://object/item/"
 var mobScenePath:StringName = "res://object/mob/"
-var itemCategoryConfigPath: StringName = "res://data/item_category.tres"
+var itemCategoryPath: StringName = "res://object/item_category/"
 
-func load_catergory()->bool:
-	return true
-
-func load_data() -> bool:
+func load_category()->bool:
 	# Load Global.itemData
-	var itemPaths := DirAccess.get_files_at(itemDataPath)
-	var fileCount:=itemPaths.size()
+	var catergoryPaths := DirAccess.get_files_at(itemCategoryPath)
+	var fileCount:=catergoryPaths.size()
 	var importCount :=0
-	for path in itemPaths:
+	for path in catergoryPaths:
 		if path.ends_with(".tres"):
-			var item = load(itemDataPath + path)
-			if item:
-				Global.itemData[path.get_basename()] = item
+			var catergory = load(itemCategoryPath + path)
+			if catergory is ItemCategory:
+				Global.itemCategories[path.get_basename()] = catergory
 				importCount+=1
-	print_debug("Successfully import item data: ", importCount, " out of " , fileCount)
-	if(fileCount>importCount): push_error("There're ", fileCount-importCount, " item data FAILED to import!")
-	
-	importCount = 0
-	fileCount = 0
-	# Load Global.mobData
-	var mobPaths := DirAccess.get_files_at(mobDataPath)
-	for path in mobPaths:
-		fileCount+=1
-		if path.ends_with(".tres"):
-			var mob = load(mobDataPath + path)
-			if mob:
-				Global.mobData[path.get_basename()] = mob
-				importCount+=1
-	print_debug("Successfully import mob data: ", importCount, " out of ", fileCount)
-	if(fileCount>importCount): push_error("There're ", fileCount-importCount, " mob data FAILED to import!")
+	for key in Global.itemCategories:
+		var current = Global.itemCategories[key]
+		if(current.parentCategory && Global.itemCategories.has(current.parentCategory)): current.parentCategory.subCategories.append(current)
+		else: Global.itemCategories["root"].subCategories.append(current)
+	print_debug("Successfully import catergory: ", importCount, " out of " , fileCount)
+	if(fileCount>importCount): push_error("There're ", fileCount-importCount, " catergories FAILED to import!")
 	return true
 
-func load_object() -> bool:
-	# Load Item
+## Load Item
+func load_item() -> bool:
 	var itemPaths := DirAccess.get_directories_at(itemScenePath)
 	var fileCount:=itemPaths.size()
 	var importCount :=0
 	for path in itemPaths:
-		for i in DirAccess.get_files_at(itemScenePath+path):
-			if i.ends_with(".tscn"):
-				var item = load(itemScenePath + path+"/"+i)
-				if item:
-					Global.items[path] = item
-					importCount+=1
-					break
+		var item_path := itemScenePath+path+"/"+path+".tscn"
+		if FileAccess.file_exists(item_path):
+			var item = load(item_path)
+			Global.items[path] = item
+			importCount+=1
+		else:
+			push_warning("Unable to load item:", item_path)
 	print_debug("Successfully import item scene: ", importCount, " out of ", fileCount)
 	if(fileCount>importCount): push_warning("There're ", fileCount-importCount, " item scenes FAILED to import!")
 	
-	# Load Mob
+	## Preprocess accepted item for each category
+	for i in Global.items:
+		var item := Global.items[i].instantiate()
+		if item and item is Item: #and item.has_variable("itemCategory"):
+			if item.itemCategory: item.itemCategory.acceptedItems.append(i)
+			else: Global.itemCategories["root"].acceptedItems.append(i)
+	var currentList:Array[ItemCategory] = []
+	var waitList:Array[ItemCategory] = []
+	for i in Global.itemCategories:
+		var cat := Global.itemCategories[i]
+		if cat.subCategories.is_empty(): 
+			waitList.append(cat.parentCategory)
+			cat.parentCategory.acceptedItems.append_array(cat.acceptedItems)
+	while not waitList.is_empty():
+		if(currentList.is_empty()):
+			currentList = waitList
+			waitList.clear()
+		var current:ItemCategory=Global.itemCategories[currentList.back()]
+		var parent:=current.parentCategory
+		if parent:
+			waitList.append(parent)
+			parent.acceptedItems.append_array(current.acceptedItems)
+		currentList.pop_back()
+	## NOTE: Debug purpose only:
+	for i in Global.itemCategories:
+		print("Class [",i,"] has the accepted items: ", Global.itemCategories[i].acceptedItems)
+	return true
+	
+## Load Mob
+func load_mob() -> bool:
 	var mobPaths := DirAccess.get_directories_at(mobScenePath)
-	fileCount = mobPaths.size()
-	importCount = 0
+	var fileCount := mobPaths.size()
+	var importCount := 0
 	for path in mobPaths:
-		for i in DirAccess.get_files_at(mobScenePath+path):
-			if i.ends_with(".tscn"):
-				var mob = load(mobScenePath + path+"/"+i)
-				if mob:
-					Global.mobs[path] = mob
-					importCount+=1
-					break
+		var mob_path := mobScenePath + path + "/" + path + ".tscn"
+		if FileAccess.file_exists(mob_path):
+			var mob = load(mob_path)
+			Global.mobs[path] = mob
+			importCount+=1
+			break
+		else:
+			push_warning("Unable to load mob:", mob_path)
 	print_debug("Successfully import mob scene: ", importCount, " out of ", fileCount)
-	if(fileCount>importCount): push_warning("There're ", fileCount-importCount, " mob scenes FAILED to import!")
+	if(fileCount>importCount): push_error("There're ", fileCount-importCount, " mob scenes FAILED to import!")
 	return true
 
-
+#func load_data() -> bool:
+	## Load Global.itemData
+	#var itemPaths := DirAccess.get_files_at(itemDataPath)
+	#var fileCount:=itemPaths.size()
+	#var importCount :=0
+	#for path in itemPaths:
+		#if path.ends_with(".tres"):
+			#var item = load(itemDataPath + path)
+			#if item is ItemData:
+				#Global.itemData[path.get_basename()] = item
+				#importCount+=1
+	#print_debug("Successfully import item data: ", importCount, " out of " , fileCount)
+	#if(fileCount>importCount): push_error("There're ", fileCount-importCount, " item data FAILED to import!")
+	#
+	#importCount = 0
+	#fileCount = 0
+	## Load Global.mobData
+	#var mobPaths := DirAccess.get_files_at(mobDataPath)
+	#for path in mobPaths:
+		#fileCount+=1
+		#if path.ends_with(".tres"):
+			#var mob = load(mobDataPath + path)
+			#if mob is MobData:
+				#Global.mobData[path.get_basename()] = mob
+				#importCount+=1
+	#print_debug("Successfully import mob data: ", importCount, " out of ", fileCount)
+	#if(fileCount>importCount): push_error("There're ", fileCount-importCount, " mob data FAILED to import!")
+	#return true
+	
 #func load_category()->bool:
 	## Path check
 	#if not FileAccess.file_exists(itemCategoryConfigPath):

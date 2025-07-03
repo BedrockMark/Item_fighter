@@ -27,7 +27,7 @@ folder_colors={
 "res://UI/": "green",
 "res://asset/": "red",
 "res://class/": "yellow",
-"res://data/": "purple",
+"res://class/object_data/": "gray",
 "res://object/": "purple",
 "res://scene/": "blue"
 }

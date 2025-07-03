@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="ItemCategory" load_steps=2 format=3 uid="uid://bhv1ua8e6hpu3"]
+
+[ext_resource type="Script" uid="uid://c545ynxemae2q" path="res://class/item_category.gd" id="1_pddll"]
+
+[resource]
+script = ExtResource("1_pddll")
+inventoryColor = Color(0.980392, 0.921569, 0.843137, 1)
+subCategories = Array[ExtResource("1_pddll")]([])
+metadata/_custom_type_script = "uid://c545ynxemae2q"

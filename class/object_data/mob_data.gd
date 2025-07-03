@@ -12,4 +12,3 @@ class_name MobData extends ObjectData
 @export_category("Capability")
 @export var weaponCapability:int = 1 ## how many weapon this mob can hold, negative for infinite
 @export var abilityCapability:int = 0 ## how many ability this mob can hold, negative for infinite
-@export var itemCapability:int = 1 ## how many item this mob can have in its inventory, negative for infinite
