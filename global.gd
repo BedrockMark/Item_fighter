@@ -19,15 +19,11 @@ func _ready() -> void:
 	ObjectManager.load_item()
 	ObjectManager.load_mob()
 	player = load("res://object/mob/mob.tscn").instantiate()
+	player.controlling = true
 
-func _physics_process(_delta):
+func _physics_process(delta):
 	var input_vector = Vector2(
 		Input.get_action_strength("ui_right") - Input.get_action_strength("ui_left"),
 		Input.get_action_strength("ui_down") - Input.get_action_strength("ui_up")
 	).normalized()
-	if(player): player.move_mob(input_vector)
-
-func load_map(path:String)->PackedScene:
-	if(maps.has(path)): return maps[path]
-	maps[path] = load(path)
-	return maps[path]
+	if(player): player.move_mob(input_vector,delta)

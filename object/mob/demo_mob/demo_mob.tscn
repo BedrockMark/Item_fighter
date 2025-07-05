@@ -1,40 +1,5 @@
-[gd_scene load_steps=8 format=3 uid="uid://cioxay2nlodil"]
+[gd_scene load_steps=2 format=3 uid="uid://c4r33l5vcxwe7"]
 
-[ext_resource type="Script" uid="uid://d50i8rfui640" path="res://object/mob/mob.gd" id="1_sjthl"]
-[ext_resource type="Script" uid="uid://m2v2ykmukvg7" path="res://class/object_data/mob_data.gd" id="2_y4pe3"]
-[ext_resource type="Script" uid="uid://dcyu6avb6akq8" path="res://class/inventory.gd" id="3_w6q8b"]
-[ext_resource type="SpriteFrames" uid="uid://ds6xn3q3v281l" path="res://asset/character/Premade_Character_32x32_01.tres" id="4_3i0s1"]
+[ext_resource type="PackedScene" uid="uid://dyuy7r7svpv8i" path="res://object/mob/mob.tscn" id="1_fdoyr"]
 
-[sub_resource type="Resource" id="Resource_5b4f2"]
-script = ExtResource("2_y4pe3")
-hp = 100.0
-defend = 0.0
-speed = 150.0
-weaponCapability = 1
-abilityCapability = 0
-itemCapability = 3
-metadata/_custom_type_script = "uid://m2v2ykmukvg7"
-
-[sub_resource type="Resource" id="Resource_cbpmc"]
-script = ExtResource("3_w6q8b")
-slotCount = -1
-metadata/_custom_type_script = "uid://dcyu6avb6akq8"
-
-[sub_resource type="CapsuleShape2D" id="CapsuleShape2D_o1wbr"]
-radius = 12.0
-height = 40.0
-
-[node name="CharacterBody2D" type="CharacterBody2D"]
-script = ExtResource("1_sjthl")
-mobData = SubResource("Resource_5b4f2")
-inventory = SubResource("Resource_cbpmc")
-
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="."]
-sprite_frames = ExtResource("4_3i0s1")
-animation = &"idle_right"
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, 8.5)
-shape = SubResource("CapsuleShape2D_o1wbr")
-
-[node name="IdleTimer" type="Timer" parent="."]
+[node name="CharacterBody2D" instance=ExtResource("1_fdoyr")]

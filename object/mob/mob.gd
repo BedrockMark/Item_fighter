@@ -7,8 +7,8 @@ class_name Mob extends CharacterBody2D
 @export var defend: float = 0 ## negative means extra weak
 @export var speed: float = 150.0 ## Negative to reverse the actions
 
-### Capabilities
-@export var equipment:Array[Item] ## NOTE: Inventory will belong to one of the items, rather than a seperate 
+@export_category("State List")
+@export var equipment:Dictionary[StringName, Item] ## NOTE: Inventory will belong to one of the items, rather than a seperate variable
 @export var ability:Array[StringName] ## StringName to be the name of the ability function.
 @export var buff: Dictionary[String, Buff] ## Also put debuffs here as well.
 
@@ -18,15 +18,25 @@ class_name Mob extends CharacterBody2D
 var direction := "down"
 var state := "idle"
 var last_direction := Vector2.DOWN
+var controlling:=false:
+	set(value):
+		if value:
+			$Camera2D.enabled = true
+		else:
+			$Camera2D.enabled = false
 
-#func _init(data: MobData = null, defaultInventory: Inventory = null) -> void:
-	#if(defaultInventory): inventory = defaultInventory
+func _ready() -> void:
+	if(equipment.has("hand")&&equipment["hand"].get_parent()==null): $HoldPoint.add_child(equipment["hand"])
 
-func move_mob(input_vector:Vector2)->void:
+func move_mob(input_vector:Vector2, delta: float)->void:
 	
 	velocity = input_vector * speed
-	move_and_slide()
-
+	var collision = move_and_collide(velocity * delta)
+	if collision and collision.get_collider() is RigidBody2D:
+		var body := collision.get_collider() as RigidBody2D
+		# Push item
+		body.apply_central_impulse(velocity/10)
+	
 	if input_vector != Vector2.ZERO:
 		last_direction = input_vector
 		state = "walk"

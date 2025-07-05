@@ -1,0 +1,22 @@
+[gd_scene load_steps=6 format=3 uid="uid://byfb7q4pp0rmi"]
+
+[ext_resource type="PackedScene" uid="uid://ov5vv4tel6ka" path="res://object/item/item.tscn" id="1_klmp0"]
+[ext_resource type="Texture2D" uid="uid://bwe5is7kjpn8y" path="res://asset/item/items32.png" id="2_h06w6"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_b0krh"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gvhry"]
+atlas = ExtResource("2_h06w6")
+region = Rect2(32, 0, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_588oa"]
+atlas = ExtResource("2_h06w6")
+region = Rect2(32, 0, 32, 32)
+
+[node name="RigidBody2D" instance=ExtResource("1_klmp0")]
+physics_material_override = SubResource("PhysicsMaterial_b0krh")
+defaultTexture = SubResource("AtlasTexture_gvhry")
+
+[node name="Sprite2D" parent="." index="1"]
+scale = Vector2(0.5, 0.5)
+texture = SubResource("AtlasTexture_588oa")

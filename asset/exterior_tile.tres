@@ -1,9 +1,9 @@
 [gd_resource type="TileSet" load_steps=3 format=3 uid="uid://dsn6cgeuo1bm5"]
 
-[ext_resource type="Texture2D" uid="uid://014afrs5ir5k" path="res://asset/exterior/Godot_Autotiles_32x32.png" id="1_55c0a"]
+[ext_resource type="Texture2D" uid="uid://014afrs5ir5k" path="res://asset/exterior/Godot_Autotiles_32x32.png" id="1_ptch5"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_64jns"]
-texture = ExtResource("1_55c0a")
+texture = ExtResource("1_ptch5")
 texture_region_size = Vector2i(32, 32)
 0:0/0 = 0
 0:0/0/terrain_set = 0

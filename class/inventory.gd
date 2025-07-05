@@ -7,7 +7,11 @@ var stackExpection: Dictionary[StringName, int]## Item ID -> count
 ## (optional) Who's my dad?
 var owner: Node2D = null
 
-func input_item():
+func input_item(item:Item):
+	## Unparent, or remove it from the scene, if an item was in a scene
+	if item.get_parent(): item.get_parent().remove_child(item)
+	## Check if any of its child item has an inventory accept the item
+	## TODO: It's kind of disputing, we might discuss it later?
 	pass
 
 func output_item():

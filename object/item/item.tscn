@@ -3,9 +3,12 @@
 [ext_resource type="Script" uid="uid://b7nglbfadm6t2" path="res://object/item/item.gd" id="1_mljhg"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_mljhg"]
+radius = 9.0
 
 [node name="RigidBody2D" type="RigidBody2D"]
 script = ExtResource("1_mljhg")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_mljhg")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
