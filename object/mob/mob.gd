@@ -35,7 +35,7 @@ func move_mob(input_vector:Vector2, delta: float)->void:
 	if collision and collision.get_collider() is RigidBody2D:
 		var body := collision.get_collider() as RigidBody2D
 		# Push item
-		body.apply_central_impulse(velocity/10)
+		body.apply_central_impulse(velocity)
 	
 	if input_vector != Vector2.ZERO:
 		last_direction = input_vector

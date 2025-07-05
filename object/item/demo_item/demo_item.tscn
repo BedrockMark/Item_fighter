@@ -22,7 +22,7 @@ metadata/_custom_type_script = "uid://dcyu6avb6akq8"
 [node name="RigidBody2D" instance=ExtResource("1_kjai0")]
 mass = 25.85
 physics_material_override = SubResource("PhysicsMaterial_n43uq")
-linear_damp = 22.907
+linear_damp = 1.0
 script = ExtResource("2_n43uq")
 defaultTexture = SubResource("AtlasTexture_m7hxd")
 inventory = SubResource("Resource_n43uq")

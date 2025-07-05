@@ -1,12 +1,14 @@
-[gd_scene load_steps=3 format=3 uid="uid://ov5vv4tel6ka"]
+[gd_scene load_steps=4 format=3 uid="uid://ov5vv4tel6ka"]
 
 [ext_resource type="Script" uid="uid://b7nglbfadm6t2" path="res://object/item/item.gd" id="1_mljhg"]
+[ext_resource type="Resource" uid="uid://bhv1ua8e6hpu3" path="res://object/item_category/root.tres" id="2_aw1vn"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_mljhg"]
 radius = 9.0
 
 [node name="RigidBody2D" type="RigidBody2D"]
 script = ExtResource("1_mljhg")
+itemCategory = ExtResource("2_aw1vn")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 shape = SubResource("CircleShape2D_mljhg")

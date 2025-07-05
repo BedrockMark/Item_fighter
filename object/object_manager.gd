@@ -5,7 +5,6 @@ var mobScenePath:StringName = "res://object/mob/"
 var itemCategoryPath: StringName = "res://object/item_category/"
 
 func load_category()->bool:
-	# Load Global.itemData
 	var catergoryPaths := DirAccess.get_files_at(itemCategoryPath)
 	var fileCount:=catergoryPaths.size()
 	var importCount :=0
@@ -18,7 +17,9 @@ func load_category()->bool:
 	for key in Global.itemCategories:
 		var current = Global.itemCategories[key]
 		if(current.parentCategory && Global.itemCategories.has(current.parentCategory)): current.parentCategory.subCategories.append(current)
-		else: Global.itemCategories["root"].subCategories.append(current)
+		else: 
+			Global.itemCategories["root"].subCategories.append(current)
+			current.parentCategory = Global.itemCategories["root"]
 	print_debug("Successfully import catergory: ", importCount, " out of " , fileCount)
 	if(fileCount>importCount): push_error("There're ", fileCount-importCount, " catergories FAILED to import!")
 	return true
@@ -39,32 +40,60 @@ func load_item() -> bool:
 	print_debug("Successfully import item scene: ", importCount, " out of ", fileCount)
 	if(fileCount>importCount): push_warning("There're ", fileCount-importCount, " item scenes FAILED to import!")
 	
-	## Preprocess accepted item for each category
+	## Preprocess: add item to its category's accepted items array & update each item's name
+	var tempItems: Dictionary[StringName,Item]
 	for i in Global.items:
 		var item := Global.items[i].instantiate()
 		if item and item is Item: #and item.has_variable("itemCategory"):
+			item.itemName = i
+			tempItems[i] = item
 			if item.itemCategory: item.itemCategory.acceptedItems.append(i)
 			else: Global.itemCategories["root"].acceptedItems.append(i)
+	
+	## Preprocess: Update every scene's accepted items to include its sub category's accepted items
 	var currentList:Array[ItemCategory] = []
 	var waitList:Array[ItemCategory] = []
 	for i in Global.itemCategories:
 		var cat := Global.itemCategories[i]
 		if cat.subCategories.is_empty(): 
-			waitList.append(cat.parentCategory)
+			if cat.parentCategory != Global.itemCategories["root"]: waitList.append(cat.parentCategory)
 			cat.parentCategory.acceptedItems.append_array(cat.acceptedItems)
 	while not waitList.is_empty():
 		if(currentList.is_empty()):
-			currentList = waitList
+			currentList = waitList.duplicate()
 			waitList.clear()
-		var current:ItemCategory=Global.itemCategories[currentList.back()]
+		#var current:ItemCategory=Global.itemCategories[currentList.back()]
+		var current:ItemCategory=currentList.pop_back()
 		var parent:=current.parentCategory
 		if parent:
-			waitList.append(parent)
+			if parent != Global.itemCategories["root"]: waitList.append(parent)
 			parent.acceptedItems.append_array(current.acceptedItems)
-		currentList.pop_back()
+		
+	## Preprocess: update each item's acceptedShootingItem array
+	for i in tempItems:
+		var currentItem := tempItems[i]
+		var shootingItemList:=currentItem.acceptedShootingItem
+		for j in currentItem.shootingCategory:
+			shootingItemList.append_array(j.acceptedItems)
+		for j in currentItem.shootingItemExpand:
+			shootingItemList.append(j.itemName)
+		for j in currentItem.shootingCategoryException:
+			for k in j.acceptedItems:
+				shootingItemList.erase(k)
+		for j in currentItem.shootingItemException:
+			shootingItemList.erase(j.itemName)
+		## NOTE: I don't think the following unique is necessary, but we'll see...
+		#Utility.array_unique(currentItem.acceptedShootingItem)
+		Global.items[i] = PackedScene.new()
+		Global.items[i].pack(currentItem)
+	
 	## NOTE: Debug purpose only:
+	print("[Object_manager] --- Item loading debug log: ---")
 	for i in Global.itemCategories:
 		print("Class [",i,"] has the accepted items: ", Global.itemCategories[i].acceptedItems)
+	for i in tempItems:
+		print("Item [", tempItems[i].itemName, "] has an acceptedShootingItem array of: ", tempItems[i].acceptedShootingItem)
+	print("[Object_manager] --- Item loading debug log ends ---")
 	return true
 	
 ## Load Mob

@@ -16,3 +16,4 @@ tile_set = ExtResource("1_fpemu")
 
 [node name="RigidBody2D" parent="." instance=ExtResource("3_kt7xg")]
 position = Vector2(444, 293)
+itemCategory = null

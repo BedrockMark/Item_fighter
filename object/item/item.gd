@@ -1,13 +1,23 @@
 class_name Item extends RigidBody2D
 
+var itemName:StringName ## Will be pre-processed by the object manager.
 @export var durability: float = 100.0
 @export var max_durability: float = 100.0
-@export var throwDamage: float = 0 # negative to heal NOTE: shoot damage belongs to each item: what does it shoot?
+#@export var throwDamage: float = 0 # negative to heal
+@export var muzzleVelocity: float = 1.0
 @export var quantity: int = 1: # negative to infinite
 	set(value):
 		if value: quantity = value
 		else: delete_self()
 @export var itemCategory: ItemCategory
+
+@export_group("Behavior Definition")
+@export var canBeUse:=false ## it can be eat? true. can be drink? true. can be open? true.
+@export var effectAsPoision: Array[Buff]
+@export var canBeEquiptBy:PackedStringArray ## Type slot names
+@export var effectAsPlugin: Array[Buff]
+@export var maxPluginCount:int = 0
+@export var lossDurabilityWhenDropped:float = 0
 
 @export_group("Texture")
 @export var defaultTexture: Texture2D
@@ -17,16 +27,17 @@ class_name Item extends RigidBody2D
 @export_group("State List")
 @export var inventory:Inventory
 @export var enchantment: Array[Buff]
+@export var plugin: Array[Item] ## Items in plugin will be "activate" to add buff on main item.
 
 @export_group("Weapon State")
 @export var shootingCategory: Array[ItemCategory]
 @export var shootingItemExpand: Array[Item]
 @export var shootingCategoryException: Array[ItemCategory]
 @export var shootingItemException: Array[Item]
-var acceptedShootingItem: Array[StringName]
-var shootingItems: Array[Item]
+@export_storage var acceptedShootingItem: Array[StringName] ## Preprocessed
+var shootingItems: Array[Item] ## backend
 
-var owner_inventory: Inventory
+var owner_inventory: Inventory ## Preprocessed
 
 func _enter_tree() -> void:
 	if(get_parent() && get_parent() is Marker2D && heldTexture): 
