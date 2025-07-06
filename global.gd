@@ -6,6 +6,7 @@ extends Node
 
 ### Nodes
 var player:Mob = null
+var currentArena:Map = null
 
 ### Resource dictionary
 var itemCategories: Dictionary[StringName, ItemCategory] = {}

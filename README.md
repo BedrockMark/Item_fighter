@@ -13,17 +13,21 @@ Psyclean heartship reborn
 # TODO List
 ### 1. Scenes
 - Basic class structure refine -> res://class/
-	- mob_data, weapon data, mob, weapon
-- Scene manager -> res://scene/scene_manager.tscn
-	- Demo scene -> res://scene/arena/demo.tscn
+	- ~~item~~, mob, ~~item category~~, buff
+- ~~Scene manager~~ -> res://scene/scene_manager.tscn
+	- ~~Demo scene~~ -> res://scene/arena/demo.tscn
 - UI -> res://UI/ui_manager.tscn
 	- GUI.tscn
 	- Menu.tscn
 	- Setting.tscn
+- Inventory -> res://class/inventory.gd
+	- Input_item, has_item, take_item, remove_item
+- Finite state machine
+	- Enemy states, friendly states, (NPC states?)
 
 ### 2. Data/formula
 - Health <-> dmg setting
-	- DMG calculation
+	- ~~DMG calculation~~
 	- General HP/DMG/Defence level
 	- Upgrade setting (both for players and enemies)
 - Physical setting
@@ -31,4 +35,10 @@ Psyclean heartship reborn
 	- Collision rebounce?
 	- Shape?
 - Capability
-	- How many item, weapon, ability can player/mobs have
+	- ~~How many item, weapon, ability can player/mobs have~~
+
+### 3. Asset
+- Item Category
+	- Category Icon, Category theme
+- Item
+	- Default icon, holded icon, inventory icon, shooted icon

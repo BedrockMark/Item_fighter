@@ -4,19 +4,17 @@
 
 extends Node2D
 
-var currentArena:Map = null
-
 func _ready() -> void:
-	currentArena = $Map
+	Global.currentArena = $Map
 	## Debug usage only, should be located under ui_manager / arena maps.
 	turn_to_map("res://scene/arena/demo.tscn")
-	currentArena.summon_item_from_id("demo_item")
+	Global.currentArena.summon_item_from_id("demo_item")
 
 func turn_to_map(path:String)->bool:
 	var map := load_map(path)
-	currentArena.free()
-	currentArena =  map.instantiate()
-	self.add_child(currentArena)
+	Global.currentArena.free()
+	Global.currentArena =  map.instantiate()
+	self.add_child(Global.currentArena)
 	return true
 
 func load_map(path:String)->PackedScene:
