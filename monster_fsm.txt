@@ -1,0 +1,658 @@
+# MonsterNPC.gd - Main NPC scene script
+extends CharacterBody2D
+class_name MonsterNPC
+
+# Core components
+@onready var state_machine: StateMachine = $StateMachine
+@onready var sprite: AnimatedSprite2D = $AnimatedSprite2D
+@onready var detection_area: Area2D = $DetectionArea
+@onready var attack_area: Area2D = $AttackArea
+@onready var navigation_agent: NavigationAgent2D = $NavigationAgent2D
+
+# Stats
+@export var max_health: float = 100.0
+@export var current_health: float = 100.0
+@export var move_speed: float = 80.0
+@export var chase_speed: float = 120.0
+@export var attack_damage: float = 20.0
+@export var attack_range: float = 32.0
+@export var detection_range: float = 150.0
+@export var vision_cone_angle: float = 60.0
+@export var patrol_points: Array[Vector2] = []
+@export var return_threshold: float = 300.0  # Distance before returning to patrol
+
+# Current state data
+var target: Node2D = null
+var patrol_origin: Vector2
+var last_known_target_position: Vector2
+var is_nocturnal: bool = false
+var flee_threshold: float = 0.2  # Flee when health below 20%
+
+# Signals
+signal health_changed(new_health: float)
+signal died()
+signal target_detected(target: Node2D)
+signal target_lost()
+
+func _ready():
+	patrol_origin = global_position
+	current_health = max_health
+	_setup_areas()
+	
+	# Connect signals
+	health_changed.connect(_on_health_changed)
+	died.connect(_on_died)
+	
+	# Start the state machine
+	state_machine.start()
+
+func _setup_areas():
+	# Setup detection area
+	var detection_shape = CircleShape2D.new()
+	detection_shape.radius = detection_range
+	detection_area.get_child(0).shape = detection_shape
+	detection_area.body_entered.connect(_on_detection_area_entered)
+	detection_area.body_exited.connect(_on_detection_area_exited)
+	
+	# Setup attack area
+	var attack_shape = CircleShape2D.new()
+	attack_shape.radius = attack_range
+	attack_area.get_child(0).shape = attack_shape
+
+func _physics_process(delta):
+	# Handle movement
+	if velocity.length() > 0:
+		sprite.flip_h = velocity.x < 0
+		move_and_slide()
+
+# Utility functions for states
+func can_see_target(target_node: Node2D) -> bool:
+	if not target_node:
+		return false
+	
+	var space_state = get_world_2d().direct_space_state
+	var query = PhysicsRayQueryParameters2D.create(
+		global_position, target_node.global_position
+	)
+	query.exclude = [self]
+	var result = space_state.intersect_ray(query)
+	
+	if result.is_empty():
+		return true
+	
+	return result.collider == target_node
+
+func is_target_in_vision_cone(target_node: Node2D) -> bool:
+	if not target_node:
+		return false
+	
+	var direction_to_target = (target_node.global_position - global_position).normalized()
+	var facing_direction = Vector2.RIGHT if not sprite.flip_h else Vector2.LEFT
+	var angle_to_target = facing_direction.angle_to(direction_to_target)
+	
+	return abs(angle_to_target) <= deg_to_rad(vision_cone_angle / 2.0)
+
+func move_to_position(target_pos: Vector2, speed: float):
+	navigation_agent.target_position = target_pos
+	var next_position = navigation_agent.get_next_path_position()
+	var direction = (next_position - global_position).normalized()
+	velocity = direction * speed
+
+func take_damage(amount: float):
+	current_health = max(0, current_health - amount)
+	health_changed.emit(current_health)
+	
+	if current_health <= 0:
+		died.emit()
+
+func heal(amount: float):
+	current_health = min(max_health, current_health + amount)
+	health_changed.emit(current_health)
+
+func get_health_percentage() -> float:
+	return current_health / max_health
+
+func is_day_time() -> bool:
+	# Simple day/night cycle - can be connected to game time system
+	return true  # Override based on your game's time system
+
+func _on_detection_area_entered(body):
+	if body.is_in_group("player") or body.is_in_group("enemies"):
+		if body != self and can_see_target(body) and is_target_in_vision_cone(body):
+			target = body
+			last_known_target_position = body.global_position
+			target_detected.emit(body)
+
+func _on_detection_area_exited(body):
+	if body == target:
+		target_lost.emit()
+
+func _on_health_changed(new_health: float):
+	# Visual feedback for health changes
+	pass
+
+func _on_died():
+	state_machine.transition_to("Dead")
+
+# ==============================================================================
+# StateMachine.gd - Central state machine controller
+extends Node
+class_name StateMachine
+
+@export var initial_state: State
+var current_state: State
+var states: Dictionary = {}
+
+func _ready():
+	# Wait for child states to be ready
+	await get_tree().process_frame
+	
+	# Register all child states
+	for child in get_children():
+		if child is State:
+			states[child.name] = child
+			child.state_machine = self
+			child.npc = get_parent()
+
+func start():
+	if initial_state:
+		transition_to(initial_state.name)
+
+func transition_to(state_name: String):
+	if state_name in states:
+		var new_state = states[state_name]
+		
+		if current_state:
+			current_state.exit()
+		
+		current_state = new_state
+		current_state.enter()
+		print("Transitioned to: ", state_name)
+
+func _process(delta):
+	if current_state:
+		current_state.update(delta)
+
+func _physics_process(delta):
+	if current_state:
+		current_state.physics_update(delta)
+
+# ==============================================================================
+# State.gd - Base state class
+extends Node
+class_name State
+
+var state_machine: StateMachine
+var npc: MonsterNPC
+
+func enter():
+	pass
+
+func exit():
+	pass
+
+func update(delta: float):
+	pass
+
+func physics_update(delta: float):
+	pass
+
+# ==============================================================================
+# IdleState.gd - Idle behavior
+extends State
+class_name IdleState
+
+var idle_timer: float = 0.0
+var idle_duration: float = 2.0
+
+func enter():
+	npc.velocity = Vector2.ZERO
+	idle_timer = 0.0
+	npc.sprite.play("idle")
+
+func update(delta: float):
+	idle_timer += delta
+	
+	# Check for targets
+	if npc.target:
+		state_machine.transition_to("Alert")
+		return
+	
+	# Check if should sleep at night
+	if npc.is_nocturnal and npc.is_day_time():
+		state_machine.transition_to("Sleep")
+		return
+	
+	# Transition to patrol after idle time
+	if idle_timer >= idle_duration and npc.patrol_points.size() > 0:
+		state_machine.transition_to("Patrol")
+
+# ==============================================================================
+# PatrolState.gd - Patrol behavior
+extends State
+class_name PatrolState
+
+var current_patrol_index: int = 0
+var patrol_wait_time: float = 1.0
+var wait_timer: float = 0.0
+var is_waiting: bool = false
+
+func enter():
+	npc.sprite.play("walk")
+	if npc.patrol_points.is_empty():
+		state_machine.transition_to("Idle")
+
+func update(delta: float):
+	# Check for targets
+	if npc.target:
+		state_machine.transition_to("Alert")
+		return
+	
+	# Check if should sleep
+	if npc.is_nocturnal and npc.is_day_time():
+		state_machine.transition_to("Sleep")
+		return
+	
+	if is_waiting:
+		wait_timer += delta
+		if wait_timer >= patrol_wait_time:
+			is_waiting = false
+			wait_timer = 0.0
+			current_patrol_index = (current_patrol_index + 1) % npc.patrol_points.size()
+
+func physics_update(delta: float):
+	if not is_waiting and not npc.patrol_points.is_empty():
+		var target_point = npc.patrol_points[current_patrol_index]
+		var distance = npc.global_position.distance_to(target_point)
+		
+		if distance < 10.0:
+			npc.velocity = Vector2.ZERO
+			is_waiting = true
+		else:
+			npc.move_to_position(target_point, npc.move_speed)
+
+# ==============================================================================
+# AlertState.gd - Alert when enemy detected
+extends State
+class_name AlertState
+
+var alert_timer: float = 0.0
+var alert_duration: float = 1.0
+
+func enter():
+	npc.velocity = Vector2.ZERO
+	npc.sprite.play("alert")
+	alert_timer = 0.0
+
+func update(delta: float):
+	alert_timer += delta
+	
+	# Check if target still exists and is visible
+	if not npc.target or not npc.can_see_target(npc.target):
+		state_machine.transition_to("Search")
+		return
+	
+	# Check if should flee
+	if npc.get_health_percentage() <= npc.flee_threshold:
+		state_machine.transition_to("Flee")
+		return
+	
+	# After alert duration, start chasing
+	if alert_timer >= alert_duration:
+		state_machine.transition_to("Chase")
+
+# ==============================================================================
+# ChaseState.gd - Chase target
+extends State
+class_name ChaseState
+
+var chase_timer: float = 0.0
+var max_chase_time: float = 10.0
+var last_seen_timer: float = 0.0
+var max_last_seen_time: float = 3.0
+
+func enter():
+	npc.sprite.play("run")
+	chase_timer = 0.0
+	last_seen_timer = 0.0
+
+func update(delta: float):
+	chase_timer += delta
+	
+	# Check if target still exists
+	if not npc.target:
+		state_machine.transition_to("Return")
+		return
+	
+	# Check if should flee
+	if npc.get_health_percentage() <= npc.flee_threshold:
+		state_machine.transition_to("Flee")
+		return
+	
+	# Check if can see target
+	if npc.can_see_target(npc.target):
+		npc.last_known_target_position = npc.target.global_position
+		last_seen_timer = 0.0
+		
+		# Check if in attack range
+		var distance = npc.global_position.distance_to(npc.target.global_position)
+		if distance <= npc.attack_range:
+			state_machine.transition_to("Attack")
+			return
+	else:
+		last_seen_timer += delta
+		
+		# Lost target for too long
+		if last_seen_timer >= max_last_seen_time:
+			state_machine.transition_to("Search")
+			return
+	
+	# Check if too far from patrol origin
+	var distance_from_origin = npc.global_position.distance_to(npc.patrol_origin)
+	if distance_from_origin > npc.return_threshold:
+		state_machine.transition_to("Return")
+		return
+	
+	# Chase timeout
+	if chase_timer >= max_chase_time:
+		state_machine.transition_to("Return")
+
+func physics_update(delta: float):
+	if npc.target:
+		npc.move_to_position(npc.last_known_target_position, npc.chase_speed)
+
+# ==============================================================================
+# AttackState.gd - Attack behavior
+extends State
+class_name AttackState
+
+var attack_timer: float = 0.0
+var attack_cooldown: float = 1.5
+var has_attacked: bool = false
+
+func enter():
+	npc.velocity = Vector2.ZERO
+	npc.sprite.play("attack")
+	attack_timer = 0.0
+	has_attacked = false
+
+func update(delta: float):
+	attack_timer += delta
+	
+	# Check if target still exists and is in range
+	if not npc.target:
+		state_machine.transition_to("Idle")
+		return
+	
+	var distance = npc.global_position.distance_to(npc.target.global_position)
+	
+	# Target moved out of range
+	if distance > npc.attack_range:
+		state_machine.transition_to("Chase")
+		return
+	
+	# Check if should flee
+	if npc.get_health_percentage() <= npc.flee_threshold:
+		state_machine.transition_to("Flee")
+		return
+	
+	# Execute attack at specific time in animation
+	if attack_timer >= 0.5 and not has_attacked:
+		perform_attack()
+		has_attacked = true
+	
+	# Return to chase after attack cooldown
+	if attack_timer >= attack_cooldown:
+		state_machine.transition_to("Chase")
+
+func perform_attack():
+	# Deal damage to target
+	if npc.target.has_method("take_damage"):
+		npc.target.take_damage(npc.attack_damage)
+		print("Monster attacked for ", npc.attack_damage, " damage")
+
+# ==============================================================================
+# SearchState.gd - Search for lost target
+extends State
+class_name SearchState
+
+var search_timer: float = 0.0
+var search_duration: float = 5.0
+var search_radius: float = 100.0
+var search_points: Array[Vector2] = []
+var current_search_index: int = 0
+
+func enter():
+	npc.sprite.play("walk")
+	search_timer = 0.0
+	generate_search_points()
+
+func generate_search_points():
+	search_points.clear()
+	var center = npc.last_known_target_position
+	
+	# Generate points around last known position
+	for i in range(4):
+		var angle = i * PI / 2.0
+		var offset = Vector2(cos(angle), sin(angle)) * search_radius
+		search_points.append(center + offset)
+	
+	current_search_index = 0
+
+func update(delta: float):
+	search_timer += delta
+	
+	# Check if target reappeared
+	if npc.target and npc.can_see_target(npc.target):
+		state_machine.transition_to("Alert")
+		return
+	
+	# Search timeout
+	if search_timer >= search_duration:
+		state_machine.transition_to("Return")
+		return
+
+func physics_update(delta: float):
+	if not search_points.is_empty():
+		var target_point = search_points[current_search_index]
+		var distance = npc.global_position.distance_to(target_point)
+		
+		if distance < 20.0:
+			current_search_index = (current_search_index + 1) % search_points.size()
+		else:
+			npc.move_to_position(target_point, npc.move_speed)
+
+# ==============================================================================
+# ReturnState.gd - Return to patrol origin
+extends State
+class_name ReturnState
+
+func enter():
+	npc.sprite.play("walk")
+	npc.target = null
+
+func update(delta: float):
+	# Check for new targets on the way back
+	if npc.target:
+		state_machine.transition_to("Alert")
+		return
+	
+	# Check if reached patrol origin
+	var distance = npc.global_position.distance_to(npc.patrol_origin)
+	if distance < 20.0:
+		state_machine.transition_to("Idle")
+
+func physics_update(delta: float):
+	npc.move_to_position(npc.patrol_origin, npc.move_speed)
+
+# ==============================================================================
+# DeadState.gd - Death state
+extends State
+class_name DeadState
+
+func enter():
+	npc.velocity = Vector2.ZERO
+	npc.sprite.play("death")
+	npc.set_collision_layer_value(1, false)  # Disable collision
+	npc.set_collision_mask_value(1, false)
+
+func update(delta: float):
+	# Dead monsters don't transition out unless revived
+	pass
+
+# ==============================================================================
+# FleeState.gd - Flee when low health
+extends State
+class_name FleeState
+
+var flee_timer: float = 0.0
+var max_flee_time: float = 8.0
+
+func enter():
+	npc.sprite.play("run")
+	flee_timer = 0.0
+
+func update(delta: float):
+	flee_timer += delta
+	
+	# Check if health recovered enough to fight
+	if npc.get_health_percentage() > npc.flee_threshold + 0.1:
+		state_machine.transition_to("Return")
+		return
+	
+	# Check if fled long enough
+	if flee_timer >= max_flee_time:
+		state_machine.transition_to("Return")
+		return
+
+func physics_update(delta: float):
+	# Flee away from target
+	if npc.target:
+		var flee_direction = (npc.global_position - npc.target.global_position).normalized()
+		var flee_position = npc.global_position + flee_direction * 200.0
+		npc.move_to_position(flee_position, npc.chase_speed)
+	else:
+		npc.move_to_position(npc.patrol_origin, npc.move_speed)
+
+# ==============================================================================
+# StunnedState.gd - Stunned when hit
+extends State
+class_name StunnedState
+
+var stun_timer: float = 0.0
+var stun_duration: float = 2.0
+
+func enter():
+	npc.velocity = Vector2.ZERO
+	npc.sprite.play("stunned")
+	stun_timer = 0.0
+
+func update(delta: float):
+	stun_timer += delta
+	
+	if stun_timer >= stun_duration:
+		# Return to appropriate state based on situation
+		if npc.target:
+			state_machine.transition_to("Alert")
+		else:
+			state_machine.transition_to("Idle")
+
+# ==============================================================================
+# SleepState.gd - Sleep during day (nocturnal monsters)
+extends State
+class_name SleepState
+
+func enter():
+	npc.velocity = Vector2.ZERO
+	npc.sprite.play("sleep")
+
+func update(delta: float):
+	# Wake up at night
+	if npc.is_nocturnal and not npc.is_day_time():
+		state_machine.transition_to("Idle")
+		return
+	
+	# Wake up if attacked
+	if npc.get_health_percentage() < 1.0:
+		state_machine.transition_to("Alert")
+
+# ==============================================================================
+# GuardState.gd - Guard specific area
+extends State
+class_name GuardState
+
+@export var guard_radius: float = 100.0
+var guard_center: Vector2
+var original_position: Vector2
+
+func enter():
+	guard_center = npc.global_position
+	original_position = npc.global_position
+	npc.sprite.play("idle")
+
+func update(delta: float):
+	# Check for targets in guard area
+	if npc.target:
+		var distance_to_target = npc.global_position.distance_to(npc.target.global_position)
+		var distance_to_center = npc.target.global_position.distance_to(guard_center)
+		
+		if distance_to_center <= guard_radius:
+			if npc.get_health_percentage() <= npc.flee_threshold:
+				state_machine.transition_to("Flee")
+			else:
+				state_machine.transition_to("Alert")
+		else:
+			# Target left guard area, return to position
+			npc.target = null
+			if npc.global_position.distance_to(original_position) > 10.0:
+				state_machine.transition_to("ReturnToGuard")
+
+func physics_update(delta: float):
+	# Stay in guard position
+	if npc.global_position.distance_to(original_position) > 5.0:
+		npc.move_to_position(original_position, npc.move_speed * 0.5)
+
+# ==============================================================================
+# CastSkillState.gd - Cast spells or skills
+extends State
+class_name CastSkillState
+
+var cast_timer: float = 0.0
+var cast_duration: float = 2.0
+var skill_range: float = 120.0
+var has_cast: bool = false
+
+func enter():
+	npc.velocity = Vector2.ZERO
+	npc.sprite.play("cast")
+	cast_timer = 0.0
+	has_cast = false
+
+func update(delta: float):
+	cast_timer += delta
+	
+	# Check if target still exists and is in range
+	if not npc.target:
+		state_machine.transition_to("Idle")
+		return
+	
+	var distance = npc.global_position.distance_to(npc.target.global_position)
+	
+	# Target moved out of range
+	if distance > skill_range:
+		state_machine.transition_to("Chase")
+		return
+	
+	# Cast spell at specific time
+	if cast_timer >= cast_duration * 0.7 and not has_cast:
+		cast_spell()
+		has_cast = true
+	
+	# Return to chase after casting
+	if cast_timer >= cast_duration:
+		state_machine.transition_to("Chase")
+
+func cast_spell():
+	# Example spell casting - create projectile or area effect
+	print("Monster cast spell at target!")
+	# Add your spell logic here

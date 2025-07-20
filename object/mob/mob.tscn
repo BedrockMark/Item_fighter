@@ -1,11 +1,29 @@
-[gd_scene load_steps=4 format=3 uid="uid://dyuy7r7svpv8i"]
+[gd_scene load_steps=18 format=3 uid="uid://dyuy7r7svpv8i"]
 
 [ext_resource type="Script" uid="uid://d50i8rfui640" path="res://object/mob/mob.gd" id="1_b28l3"]
 [ext_resource type="SpriteFrames" uid="uid://ds6xn3q3v281l" path="res://asset/character/Premade_Character_32x32_01.tres" id="3_cbpmc"]
+[ext_resource type="Script" uid="uid://bryi18mvx0p17" path="res://object/mob/fsm/StateMachine.gd" id="3_souo7"]
+[ext_resource type="Script" uid="uid://ncfunliny6lt" path="res://object/mob/fsm/AlertState.gd" id="4_1hd3v"]
+[ext_resource type="Script" uid="uid://50k6ogdl1bs4" path="res://object/mob/fsm/AttackState.gd" id="5_pdqys"]
+[ext_resource type="Script" uid="uid://c26ouge512ve2" path="res://object/mob/fsm/ChaseState.gd" id="6_hcnr2"]
+[ext_resource type="Script" uid="uid://dhn40bp7ahyn3" path="res://object/mob/fsm/DeadState.gd" id="7_vt84x"]
+[ext_resource type="Script" uid="uid://ceac808fp0u0c" path="res://object/mob/fsm/FleeState.gd" id="8_x304d"]
+[ext_resource type="Script" uid="uid://bnavbk3uk6nt" path="res://object/mob/fsm/IdleState.gd" id="9_f7bno"]
+[ext_resource type="Script" uid="uid://buhtd5yao1vxe" path="res://object/mob/fsm/PatrolState.gd" id="10_0y3vp"]
+[ext_resource type="Script" uid="uid://wnrlvx3cybov" path="res://object/mob/fsm/ReturnState.gd" id="11_vjt3p"]
+[ext_resource type="Script" uid="uid://c80kiic5alcyq" path="res://object/mob/fsm/SearchState.gd" id="12_xq2hg"]
+[ext_resource type="Script" uid="uid://c3pxf02ajn1hy" path="res://object/mob/fsm/SleepState.gd" id="13_lnrq4"]
+[ext_resource type="Script" uid="uid://c3kcbiso2jrb4" path="res://object/mob/fsm/StunnedState.gd" id="14_q1ehs"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_o1wbr"]
-radius = 12.0
-height = 40.0
+radius = 7.0
+height = 16.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_souo7"]
+size = Vector2(292, 268)
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_1hd3v"]
+radius = 26.0192
 
 [node name="CharacterBody2D" type="CharacterBody2D"]
 script = ExtResource("1_b28l3")
@@ -15,7 +33,7 @@ sprite_frames = ExtResource("3_cbpmc")
 animation = &"idle_right"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0, 8.5)
+position = Vector2(0, 24)
 shape = SubResource("CapsuleShape2D_o1wbr")
 
 [node name="IdleTimer" type="Timer" parent="."]
@@ -25,3 +43,53 @@ position = Vector2(0, 16)
 
 [node name="Camera2D" type="Camera2D" parent="."]
 enabled = false
+
+[node name="StateMachine" type="Node" parent="." node_paths=PackedStringArray("initial_state")]
+script = ExtResource("3_souo7")
+initial_state = NodePath("Idle")
+
+[node name="Alert" type="Node" parent="StateMachine"]
+script = ExtResource("4_1hd3v")
+
+[node name="Attack" type="Node" parent="StateMachine"]
+script = ExtResource("5_pdqys")
+
+[node name="Chase" type="Node" parent="StateMachine"]
+script = ExtResource("6_hcnr2")
+
+[node name="Dead" type="Node" parent="StateMachine"]
+script = ExtResource("7_vt84x")
+
+[node name="Flee" type="Node" parent="StateMachine"]
+script = ExtResource("8_x304d")
+
+[node name="Idle" type="Node" parent="StateMachine"]
+script = ExtResource("9_f7bno")
+
+[node name="Patrol" type="Node" parent="StateMachine"]
+script = ExtResource("10_0y3vp")
+
+[node name="Return" type="Node" parent="StateMachine"]
+script = ExtResource("11_vjt3p")
+
+[node name="Search" type="Node" parent="StateMachine"]
+script = ExtResource("12_xq2hg")
+
+[node name="Sleep" type="Node" parent="StateMachine"]
+script = ExtResource("13_lnrq4")
+
+[node name="Stunned" type="Node" parent="StateMachine"]
+script = ExtResource("14_q1ehs")
+
+[node name="DetectionArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="DetectionArea"]
+shape = SubResource("RectangleShape2D_souo7")
+
+[node name="AttackArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AttackArea"]
+position = Vector2(0, 15)
+shape = SubResource("CircleShape2D_1hd3v")
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="."]

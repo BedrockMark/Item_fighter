@@ -27,4 +27,4 @@ func _physics_process(delta):
 		Input.get_action_strength("ui_right") - Input.get_action_strength("ui_left"),
 		Input.get_action_strength("ui_down") - Input.get_action_strength("ui_up")
 	).normalized()
-	if(player): player.move_mob(input_vector,delta)
+	if(player): player.move_mob(input_vector)

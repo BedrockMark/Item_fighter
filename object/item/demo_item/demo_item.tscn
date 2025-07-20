@@ -1,10 +1,8 @@
-[gd_scene load_steps=9 format=3 uid="uid://osbyu7s315ee"]
+[gd_scene load_steps=6 format=3 uid="uid://osbyu7s315ee"]
 
 [ext_resource type="PackedScene" uid="uid://ov5vv4tel6ka" path="res://object/item/item.tscn" id="1_kjai0"]
 [ext_resource type="Script" uid="uid://ckfvg7txwk05c" path="res://object/item/demo_item/demo_item.gd" id="2_n43uq"]
 [ext_resource type="Texture2D" uid="uid://bwe5is7kjpn8y" path="res://asset/item/items32.png" id="3_5huvc"]
-[ext_resource type="Script" uid="uid://dcyu6avb6akq8" path="res://class/inventory.gd" id="4_i221e"]
-[ext_resource type="Script" uid="uid://c545ynxemae2q" path="res://class/item_category.gd" id="5_somsu"]
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_n43uq"]
 bounce = 0.02
@@ -14,18 +12,11 @@ absorbent = true
 atlas = ExtResource("3_5huvc")
 region = Rect2(0, 64, 32, 32)
 
-[sub_resource type="Resource" id="Resource_n43uq"]
-script = ExtResource("4_i221e")
-slotCount = Dictionary[ExtResource("5_somsu"), int]({})
-metadata/_custom_type_script = "uid://dcyu6avb6akq8"
-
 [node name="RigidBody2D" instance=ExtResource("1_kjai0")]
 mass = 25.85
 physics_material_override = SubResource("PhysicsMaterial_n43uq")
 linear_damp = 1.0
 script = ExtResource("2_n43uq")
-defaultTexture = SubResource("AtlasTexture_m7hxd")
-inventory = SubResource("Resource_n43uq")
 
 [node name="Sprite2D" parent="." index="1"]
 texture = SubResource("AtlasTexture_m7hxd")
