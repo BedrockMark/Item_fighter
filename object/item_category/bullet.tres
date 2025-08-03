@@ -4,5 +4,5 @@
 
 [resource]
 script = ExtResource("1_4o0ur")
-inventoryColor = Color(0.980392, 0.921569, 0.843137, 1)
+inventoryColor = Color(0.980392, 0.235294, 0.0509804, 1)
 metadata/_custom_type_script = "uid://c545ynxemae2q"
